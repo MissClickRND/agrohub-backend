@@ -13,10 +13,11 @@ export class KeycloakAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
-    
+
     if (
       request.path.indexOf('/auth/login') !== -1 ||
-      request.path.indexOf('/auth/refresh') !== -1
+      request.path.indexOf('/auth/refresh') !== -1 ||
+      request.path.indexOf('/auth/register') !== -1
     ) {
       return true;
     }
@@ -26,9 +27,9 @@ export class KeycloakAuthGuard implements CanActivate {
         'Missing or invalid Authorization header',
       );
     }
-    
+
     const token = authHeader.split(' ')[1];
-    
+
     const userInfo = await this.keycloakService.introspectToken(token);
 
     request.headers['x-user-id'] = userInfo.sub;

@@ -5,7 +5,7 @@ services:
     container_name: 'ah-keycloak'
     env_file:
       - ./docker.env
-    command: ["start-dev", "--http-enabled=true", "--hostname-strict=false"]
+    command: start-dev
     depends_on:
       - postgres
     ports:
@@ -49,35 +49,33 @@ services:
       - ./data/qgis:/projects
     networks:
       - qgis_net
-  ollama:
-    image: ollama/ollama:latest
-    container_name: 'ah-ollama'
-    ports:
-      - '11434:11434'
-    volumes:
-      - ./ollama:/root/.ollama
-    env_file:
-      - ./docker.env
-    networks:
-      - llm_net
-  ollama-ui:
-    image: ghcr.io/open-webui/open-webui:main
-    container_name: 'ah-ollama-ui'
-    volumes:
-      - ./ollama/ollama-webui:/app/backend/data
-    depends_on:
-      - ollama
-    ports:
-      - 8080:8080
-    env_file:
-      - ./docker.env
-    networks:
-      - llm_net
+#  ollama:
+#    image: ollama/ollama:latest
+#    container_name: 'ah-ollama'
+#    ports:
+#      - '11434:11434'
+#    volumes:
+#      - ./ollama:/root/.ollama
+#    env_file:
+#      - ./docker.env
+#    networks:
+#      - llm_net
+#  ollama-ui:
+#    image: ghcr.io/open-webui/open-webui:main
+#    container_name: 'ah-ollama-ui'
+#    volumes:
+#      - ./ollama/ollama-webui:/app/backend/data
+#    depends_on:
+#      - ollama
+#    ports:
+#      - 8080:8080
+#    env_file:
+#      - ./docker.env
+#    networks:
+#      - llm_net
   auth-gate:
     container_name: 'ah-auth-gate'
-    build:
-      dockerfile: Dockerfile
-      context: ../../backend/agrohub-auth-gate/
+    image: cr.yandex/crpg4i3auefpfdaso0pg/agrohub-auth-gate:latest
     ports:
       - '4000:4000'
     depends_on:
@@ -87,9 +85,7 @@ services:
       - keycloak_net
   auth-proxy:
     container_name: 'ah-auth-proxy'
-    build:
-      dockerfile: Dockerfile
-      context: ../../backend/agrohub-auth-proxy/
+    image: cr.yandex/crpg4i3auefpfdaso0pg/agrohub-auth-proxy:latest
     ports:
       - '4002:4002'
     depends_on:
@@ -99,9 +95,7 @@ services:
       - keycloak_net
   fields-service:
     container_name: 'ah-fields-service'
-    build:
-      dockerfile: Dockerfile
-      context: ../../backend/agrohub-fields-service/
+    image: cr.yandex/crpg4i3auefpfdaso0pg/agrohub-fields-service:latest
     ports:
       - '4003:4003'
     depends_on:
@@ -110,9 +104,7 @@ services:
       - service_net
   culture-service:
     container_name: 'ah-culture-service'
-    build:
-      dockerfile: Dockerfile
-      context: ../../backend/agrohub-culture-service/
+    image: cr.yandex/crpg4i3auefpfdaso0pg/agrohub-culture-service:latest
     ports:
       - '4005:4005'
     depends_on:
@@ -121,9 +113,7 @@ services:
       - service_net
   ground-service:
     container_name: 'ah-ground-service'
-    build:
-      dockerfile: Dockerfile
-      context: ../../backend/agrohub-ground-service/
+    image: cr.yandex/crpg4i3auefpfdaso0pg/agrohub-ground-service:latest
     ports:
       - '4006:4006'
     depends_on:
@@ -132,7 +122,6 @@ services:
       - service_net
 volumes:
   postgres-data:
-  clickhouse-data:
 networks:
   qgis_net:
     driver: bridge

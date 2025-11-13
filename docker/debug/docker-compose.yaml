@@ -1,0 +1,17 @@
+name: 'agrohub-debug'
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4
+    container_name: 'ahd-keycloak'
+    env_file:
+      - ./docker.env
+    command: start-dev
+    ports:
+      - '1001:8080'
+    networks:
+      - keycloak_net
+volumes:
+  postgres-data:
+networks:
+  keycloak_net:
+    driver: bridge
