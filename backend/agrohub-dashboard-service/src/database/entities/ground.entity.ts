@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import { ZoneEntity } from './zones.entity';
 
-@Entity({ name: 'ground' ,  synchronize: false  })
+@Entity({ name: 'ground'})
 export class GroundEntity {
   @PrimaryGeneratedColumn()
   id: string;

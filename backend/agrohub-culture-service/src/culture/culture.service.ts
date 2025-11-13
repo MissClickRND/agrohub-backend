@@ -8,9 +8,11 @@ import { CultureEntity } from 'src/database/entities/culture.entity';
 import { FieldEntity } from 'src/database/entities/fields.entity';
 import { FieldsLogsEntity } from 'src/database/entities/fieldsLogs.entity';
 import { ZoneEntity } from 'src/database/entities/zones.entity';
-import { Repository, DataSource, In } from 'typeorm';
+
+import { Repository, DataSource } from 'typeorm';
 import { CreateLogReqDto } from './dto/createLog.dto';
 import { UpdateLogReqDto } from './dto/updateLog.dto';
+import { OrgEntity } from 'src/database/entities/org.entity';
 
 export interface GanttItem {
   id: string;
@@ -31,17 +33,30 @@ export class CultureService {
     @InjectRepository(FieldEntity)
     private readonly fieldRepository: Repository<FieldEntity>,
     @InjectRepository(CultureEntity)
-    private readonly CultureRepository: Repository<CultureEntity>,
-    private readonly dataSourсe: DataSource,
+    private readonly cultureRepository: Repository<CultureEntity>,
+    @InjectRepository(OrgEntity)
+    private readonly orgRepository: Repository<OrgEntity>,
+    private readonly dataSource: DataSource,
   ) {}
 
-  async createRotation(dto: CreateLogReqDto) {
-    const culture = await this.CultureRepository.findOneBy({
+  async createRotation(dto: CreateLogReqDto, userId: string) {
+    const org = await this.orgRepository.findOne({ where: { userId } });
+    if (!org) {
+      throw new BadRequestException('Organization not found for user');
+    }
+
+    const zone = await this.zoneRepository.findOne({
+      where: { id: dto.zoneId, org: { id: org.id } },
+    });
+    if (!zone) {
+      throw new NotFoundException('Zone not found or not owned by your organization');
+    }
+
+    const culture = await this.cultureRepository.findOneBy({
       id: dto.cultureId,
     });
-
     if (!culture) {
-      throw new NotFoundException(`Crop with ID "${dto.cultureId}" not found`);
+      throw new NotFoundException(`Culture with ID "${dto.cultureId}" not found`);
     }
 
     const rotation = this.fieldsLogsRepository.create({
@@ -55,15 +70,23 @@ export class CultureService {
   }
 
   async getAllCultures() {
-    return await this.CultureRepository.find({
+    return await this.cultureRepository.find({
       select: { id: true, name: true, color: true },
     });
   }
 
-  async getLogsByZoneId(zoneId: string) {
-    const zone = await this.zoneRepository.findOneBy({ id: zoneId });
+  async getLogsByZoneId(zoneId: string, userId: string) {
+    const org = await this.orgRepository.findOne({ where: { userId } });
+    if (!org) {
+      throw new BadRequestException('Organization not found for user');
+    }
+
+    const zone = await this.zoneRepository.findOne({
+      where: { id: zoneId, org: { id: org.id } },
+      relations: ['field'],
+    });
     if (!zone) {
-      throw new NotFoundException(`Zone with ID "${zoneId}" not found`);
+      throw new NotFoundException('Zone not found or not owned by your organization');
     }
 
     const logs = await this.fieldsLogsRepository.find({
@@ -73,12 +96,7 @@ export class CultureService {
     });
 
     const result: GanttItem[] = [];
-
-    result.push({
-      id: zone.id,
-      text: zone.name,
-      type: 'summary',
-    });
+    result.push({ id: zone.id, text: zone.name, type: 'summary' });
 
     for (const log of logs) {
       result.push({
@@ -94,7 +112,17 @@ export class CultureService {
     return result;
   }
 
-  async findLatestByZoneId(zoneId: string) {
+  async findLatestByZoneId(zoneId: string, userId: string) {
+    const org = await this.orgRepository.findOne({ where: { userId } });
+    if (!org) {
+      throw new BadRequestException('Organization not found for user');
+    }
+
+    const zone = await this.zoneRepository.findOne({
+      where: { id: zoneId, org: { id: org.id } },
+    });
+    if (!zone) return null;
+
     return this.fieldsLogsRepository.findOne({
       where: { zone: { id: zoneId } },
       relations: ['culture'],
@@ -102,21 +130,52 @@ export class CultureService {
     });
   }
 
-  async deleteLog(logId: string) {
-    const result = await this.fieldsLogsRepository.delete({ id: logId });
-    if (result) {
-      return { message: 'Лог удален' };
+  async deleteLog(logId: string, userId: string) {
+    const org = await this.orgRepository.findOne({ where: { userId } });
+    if (!org) {
+      throw new BadRequestException('Organization not found for user');
     }
+
+    const result = await this.dataSource.query(
+      `DELETE FROM fields_logs fl
+       USING zones z
+       WHERE fl.id = $1
+         AND fl.zone_id = z.id
+         AND z.org_id = $2
+       RETURNING fl.id`,
+      [logId, org.id],
+    );
+
+    if (!result.length) {
+      throw new NotFoundException('Log not found or not owned by your organization');
+    }
+
+    return { message: 'Лог удален' };
   }
 
-  async updateLogById(logId: string, dto: UpdateLogReqDto) {
-    const cultureExists = await this.CultureRepository.exist({
+  async updateLogById(logId: string, dto: UpdateLogReqDto, userId: string) {
+    const org = await this.orgRepository.findOne({ where: { userId } });
+    if (!org) {
+      throw new BadRequestException('Organization not found for user');
+    }
+
+    const cultureExists = await this.cultureRepository.exist({
       where: { id: dto.cultureId },
     });
     if (!cultureExists) {
-      throw new NotFoundException(
-        `Culture with ID "${dto.cultureId}" not found`,
-      );
+      throw new NotFoundException(`Culture with ID "${dto.cultureId}" not found`);
+    }
+
+    const logExists = await this.dataSource.query(
+      `SELECT 1
+       FROM fields_logs fl
+       JOIN zones z ON z.id = fl.zone_id
+       WHERE fl.id = $1 AND z.org_id = $2`,
+      [logId, org.id],
+    );
+
+    if (!logExists.length) {
+      throw new NotFoundException('Log not found or not owned by your organization');
     }
 
     const updateData = {
@@ -125,14 +184,7 @@ export class CultureService {
       endAt: dto.endAt,
     };
 
-    const result = await this.fieldsLogsRepository.update(
-      { id: logId },
-      updateData,
-    );
-
-    if (result.affected === 0) {
-      throw new NotFoundException(`Log with ID "${logId}" not found`);
-    }
+    await this.fieldsLogsRepository.update({ id: logId }, updateData);
 
     return this.fieldsLogsRepository.findOne({
       where: { id: logId },
@@ -140,14 +192,19 @@ export class CultureService {
     });
   }
 
-  async getLogsByFieldId(fieldId: string): Promise<GanttItem[]> {
+  async getLogsByFieldId(fieldId: string, userId: string): Promise<GanttItem[]> {
+    const org = await this.orgRepository.findOne({ where: { userId } });
+    if (!org) {
+      throw new BadRequestException('Organization not found for user');
+    }
+
     const zones = await this.zoneRepository.find({
-      where: { field: { id: fieldId } },
+      where: { field: { id: fieldId }, org: { id: org.id } },
       select: { id: true, name: true },
     });
 
     if (zones.length === 0) {
-      return [];
+      throw new NotFoundException('Field not found or not owned by your organization');
     }
 
     const result: GanttItem[] = [];
@@ -159,24 +216,17 @@ export class CultureService {
         order: { createdAt: 'ASC' },
       });
 
-      const now = new Date();
-      const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-
       if (logs.length === 0) {
+        const now = new Date();
         result.push({
           id: zone.id,
           text: zone.name,
           type: 'summary',
           start: now,
-          end: tomorrow,
+          end: new Date(now.getTime() + 24 * 60 * 60 * 1000),
         });
       } else {
-        result.push({
-          id: zone.id,
-          text: zone.name,
-          type: 'summary',
-        });
-
+        result.push({ id: zone.id, text: zone.name, type: 'summary' });
         for (const log of logs) {
           result.push({
             id: log.id,

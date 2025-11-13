@@ -6,6 +6,7 @@ import { ZoneEntity } from 'src/database/entities/zones.entity';
 import { CultureController } from './culture.controller';
 import { CultureService } from './culture.service';
 import { FieldEntity } from 'src/database/entities/fields.entity';
+import { OrgEntity } from 'src/database/entities/org.entity';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { FieldEntity } from 'src/database/entities/fields.entity';
       FieldsLogsEntity,
       ZoneEntity,
       FieldEntity,
+      OrgEntity,
     ]),
   ],
   controllers: [CultureController],

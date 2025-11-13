@@ -6,6 +6,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { OrgEntity } from './org.entity';
 import { FieldEntity } from './fields.entity';
 
 @Entity({ name: 'zones', synchronize: false })
@@ -13,10 +14,14 @@ export class ZoneEntity {
   @PrimaryGeneratedColumn()
   id: string;
 
+  @ManyToOne(() => OrgEntity, (org) => org.zones, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'org_id' })
+  org: OrgEntity;
+
   @ManyToOne(() => FieldEntity, (field) => field.zones, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'field_id' })
   field: FieldEntity;
-
+  
   @Column({ name: 'name' })
   @Index({ unique: true })
   name: string;

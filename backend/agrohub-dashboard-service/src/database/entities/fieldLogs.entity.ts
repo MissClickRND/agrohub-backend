@@ -8,7 +8,7 @@ import {
 import { CultureEntity } from './culture.entity';
 import { ZoneEntity } from './zones.entity';
 
-@Entity({ name: 'FieldsLogs',  synchronize: false  })
+@Entity({ name: 'fieldsLogs' })
 export class FieldsLogsEntity {
   @PrimaryGeneratedColumn()
   id: string;

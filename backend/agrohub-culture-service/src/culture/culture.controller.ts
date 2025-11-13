@@ -3,14 +3,16 @@ import {
   Controller,
   Delete,
   Get,
+  Headers,
   Param,
   Post,
   Put,
+  BadRequestException,
 } from '@nestjs/common';
 import { CultureService } from './culture.service';
 import { CreateLogReqDto } from './dto/createLog.dto';
-import { ApiOperation } from '@nestjs/swagger';
 import { UpdateLogReqDto } from './dto/updateLog.dto';
+import { ApiOperation, ApiHeader } from '@nestjs/swagger';
 
 @Controller('culture')
 export class CultureController {
@@ -18,23 +20,41 @@ export class CultureController {
 
   @ApiOperation({ summary: 'Получить логи по полю' })
   @Get(':fieldId/list')
-  async getLogsByFieldId(@Param('fieldId') fieldId: string) {
-    return await this.cultureService.getLogsByFieldId(fieldId);
+  async getLogsByFieldId(
+    @Headers('x-user-id') userId: string,
+    @Param('fieldId') fieldId: string,
+  ) {
+    if (!userId) {
+      throw new BadRequestException('x-user-id header is required');
+    }
+    return await this.cultureService.getLogsByFieldId(fieldId, userId);
   }
 
   @ApiOperation({ summary: 'Создать новый лог' })
   @Put('create')
-  async createNewLog(@Body() dto: CreateLogReqDto) {
-    return await this.cultureService.createRotation(dto);
+  async createNewLog(
+    @Headers('x-user-id') userId: string,
+    @Body() dto: CreateLogReqDto,
+  ) {
+    if (!userId) {
+      throw new BadRequestException('x-user-id header is required');
+    }
+    return await this.cultureService.createRotation(dto, userId);
   }
 
   @ApiOperation({ summary: 'Получить логи по зоне' })
   @Get(':zoneId/logs')
-  async getByZoneID(@Param('zoneId') zoneId: string) {
-    return this.cultureService.getLogsByZoneId(zoneId);
+  async getByZoneID(
+    @Headers('x-user-id') userId: string,
+    @Param('zoneId') zoneId: string,
+  ) {
+    if (!userId) {
+      throw new BadRequestException('x-user-id header is required');
+    }
+    return this.cultureService.getLogsByZoneId(zoneId, userId);
   }
 
-  @ApiOperation({ summary: 'Получить список культуры' })
+  @ApiOperation({ summary: 'Получить список культур' })
   @Get('list')
   async getCultureList() {
     return await this.cultureService.getAllCultures();
@@ -42,13 +62,26 @@ export class CultureController {
 
   @ApiOperation({ summary: 'Удалить лог' })
   @Delete('delete/:logId')
-  async deleteLog(@Param('logId') logId: string) {
-    return this.cultureService.deleteLog(logId);
+  async deleteLog(
+    @Headers('x-user-id') userId: string,
+    @Param('logId') logId: string,
+  ) {
+    if (!userId) {
+      throw new BadRequestException('x-user-id header is required');
+    }
+    return this.cultureService.deleteLog(logId, userId);
   }
 
   @ApiOperation({ summary: 'Обновить лог' })
   @Post('update/:logId')
-  async UpdateLog(@Param('logId') logId: string, @Body() dto: UpdateLogReqDto) {
-    return await this.cultureService.updateLogById(logId, dto)
+  async updateLog(
+    @Headers('x-user-id') userId: string,
+    @Param('logId') logId: string,
+    @Body() dto: UpdateLogReqDto,
+  ) {
+    if (!userId) {
+      throw new BadRequestException('x-user-id header is required');
+    }
+    return await this.cultureService.updateLogById(logId, dto, userId);
   }
 }
