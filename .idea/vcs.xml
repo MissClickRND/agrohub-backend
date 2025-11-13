@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$/backend/agrohub-auth-gate" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/backend/agrohub-auth-proxy" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/backend/agrohub-culture-service" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/backend/agrohub-fields-service" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/backend/agrohub-ground-service" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/backend/agrohub-recommendation-service" vcs="Git" />
+  </component>
+</project>
