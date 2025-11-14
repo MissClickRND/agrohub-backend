@@ -2,7 +2,7 @@
 import { KeycloakAuthGuard } from '../../common/guards/keycloak.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
-@Controller('gate/me')
+@Controller('api/gate/me')
 export class AuthController {
   @UseGuards(KeycloakAuthGuard)
   @Get('profile')

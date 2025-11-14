@@ -1,5 +1,44 @@
 name: 'agrohub'
 services:
+  traefik:
+    image: traefik:v3.6.1
+    container_name: 'ah-traefik'
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.le.acme.httpchallenge=true"
+      - "--certificatesresolvers.le.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.le.acme.email=admin@agrohub.ru"
+      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
+      - "--log.level=INFO"
+      - "--api.insecure=true"
+      - "--accesslog=true"
+      - "--accesslog.bufferingsize=100"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/run/docker.sock:ro"
+      - "./traefik/letsencrypt:/letsencrypt"
+    networks:
+      - service_net
+    restart: always
+  nginx:
+    image: nginx:stable
+    container_name: 'ah-nginx'
+    volumes:
+      - ./frontend/dist:/usr/share/nginx/html
+      - ./frontend/nginx.conf:/etc/nginx/nginx.conf
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`agrohub.miss-click.ru`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=le"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+    networks:
+      - service_net
   keycloak:
     image: quay.io/keycloak/keycloak:26.4
     container_name: 'ah-keycloak'
@@ -76,6 +115,12 @@ services:
   auth-gate:
     container_name: 'ah-auth-gate'
     image: cr.yandex/crpg4i3auefpfdaso0pg/agrohub-auth-gate:latest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`agrohub.miss-click.ru`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls.certresolver=le"
+      - "traefik.http.services.api.loadbalancer.server.port=4000"
     ports:
       - '4000:4000'
     depends_on:
