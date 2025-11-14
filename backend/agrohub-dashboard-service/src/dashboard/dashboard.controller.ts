@@ -37,8 +37,8 @@ export class DashboardController {
   @Get('NPK/:fieldId')
   async getNPK(
     @Headers('x-user-id') userId: string,
-    @Param('fieldName') fieldName: string,
+    @Param('fieldId') fieldId: string,
   ) {
-    return await this.dashboardService.getNPKByField(userId, fieldName)
+    return await this.dashboardService.getNPKByField(userId, fieldId)
   }
 }

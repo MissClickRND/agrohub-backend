@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FieldEntity } from 'src/database/entities/fields.entity';
 import { ZoneEntity } from 'src/database/entities/zones.entity';
@@ -59,7 +63,10 @@ export class FieldsService {
     const field = await this.fieldRepository.findOne({
       where: { id: fieldId, org: { id: org.id } },
     });
-    if (!field) throw new NotFoundException('Field not found or not owned by organization');
+    if (!field)
+      throw new NotFoundException(
+        'Field not found or not owned by organization',
+      );
 
     const query = `
       INSERT INTO zones (field_id, org_id, name, geometry, area, color)
@@ -171,9 +178,7 @@ export class FieldsService {
       WHERE z.field_id = $1 AND z.org_id = $2
     `;
     const result = await this.dataSource.query(query, [fieldId, org.id]);
-    if (!result.length) {
-      throw new NotFoundException('Zones not found');
-    }
+
     return result;
   }
 

@@ -94,32 +94,32 @@ export class DashboardService {
   }
 
   async getAreaByField(userId: string) {
-  const org = await this.orgRepository.findOne({ where: { userId } });
-  if (!org) {
-    throw new BadRequestException('Organization not found for user');
-  }
+    const org = await this.orgRepository.findOne({ where: { userId } });
+    if (!org) {
+      throw new BadRequestException('Organization not found for user');
+    }
 
-  const fields = await this.fieldRepository.find({
-    where: { org: { id: org.id } },
-    relations: ['zones'],
-  });
-
-  const fieldsWithZones = fields.filter((field) => 
-    Array.isArray(field.zones) && field.zones.length > 0
-  );
-
-  const result = fieldsWithZones.map((field) => {
-    const fieldData: Record<string, any> = { field: field.name };
-
-    field.zones.forEach((zone) => {
-      fieldData[zone.name] = zone.area ?? 0;
+    const fields = await this.fieldRepository.find({
+      where: { org: { id: org.id } },
+      relations: ['zones'],
     });
 
-    return fieldData;
-  });
+    const fieldsWithZones = fields.filter(
+      (field) => Array.isArray(field.zones) && field.zones.length > 0,
+    );
 
-  return result;
-}
+    const result = fieldsWithZones.map((field) => {
+      const fieldData: Record<string, any> = { field: field.name };
+
+      field.zones.forEach((zone) => {
+        fieldData[zone.name] = zone.area ?? 0;
+      });
+
+      return fieldData;
+    });
+
+    return result;
+  }
 
   async getNPKByField(userId: string, fieldName: string) {
     const org = await this.orgRepository.findOne({ where: { userId } });
@@ -131,8 +131,6 @@ export class DashboardService {
       where: { name: fieldName, org: { id: org.id } },
       relations: ['zones'],
     });
-
-    console.log(field);
 
     if (!field) {
       throw new NotFoundException(
