@@ -64,6 +64,7 @@ export class DashboardService {
   }
 
   async getCountCulture(userId: string) {
+    const now = new Date();
     const org = await this.orgRepository.findOne({ where: { userId } });
     if (!org) {
       throw new BadRequestException('Organization not found for user');
@@ -77,8 +78,9 @@ export class DashboardService {
       .select('culture.name', 'name')
       .addSelect('COUNT(*)', 'value')
       .addSelect('culture.color', 'color')
-      .where('log.endAt IS NULL')
-      .andWhere('org.id = :orgId', { orgId: org.id })
+      .where('org.id = :orgId', { orgId: org.id })
+      .andWhere('log.createdAt <= :now', { now })
+      .andWhere('(log.endAt IS NULL OR log.endAt > :now)', { now })
       .groupBy('culture.id, culture.name, culture.color');
 
     const result: Array<{ name: string; value: string; color: string }> =
@@ -92,28 +94,32 @@ export class DashboardService {
   }
 
   async getAreaByField(userId: string) {
-    const org = await this.orgRepository.findOne({ where: { userId } });
-    if (!org) {
-      throw new BadRequestException('Organization not found for user');
-    }
-
-    const fields = await this.fieldRepository.find({
-      where: { org: { id: org.id } },
-      relations: ['zones'],
-    });
-
-    const result = fields.map((field) => {
-      const fieldData: any = { field: field.name };
-
-      field.zones.forEach((zone) => {
-        fieldData[zone.name] = zone.area;
-      });
-
-      return fieldData;
-    });
-
-    return result;
+  const org = await this.orgRepository.findOne({ where: { userId } });
+  if (!org) {
+    throw new BadRequestException('Organization not found for user');
   }
+
+  const fields = await this.fieldRepository.find({
+    where: { org: { id: org.id } },
+    relations: ['zones'],
+  });
+
+  const fieldsWithZones = fields.filter((field) => 
+    Array.isArray(field.zones) && field.zones.length > 0
+  );
+
+  const result = fieldsWithZones.map((field) => {
+    const fieldData: Record<string, any> = { field: field.name };
+
+    field.zones.forEach((zone) => {
+      fieldData[zone.name] = zone.area ?? 0;
+    });
+
+    return fieldData;
+  });
+
+  return result;
+}
 
   async getNPKByField(userId: string, fieldName: string) {
     const org = await this.orgRepository.findOne({ where: { userId } });
@@ -125,6 +131,8 @@ export class DashboardService {
       where: { name: fieldName, org: { id: org.id } },
       relations: ['zones'],
     });
+
+    console.log(field);
 
     if (!field) {
       throw new NotFoundException(
