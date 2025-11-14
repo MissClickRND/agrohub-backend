@@ -1,0 +1,2 @@
+﻿docker tag agrohub-auth-gate cr.yandex/crpg4i3auefpfdaso0pg/agrohub-auth-gate
+docker push cr.yandex/crpg4i3auefpfdaso0pg/agrohub-auth-gate
