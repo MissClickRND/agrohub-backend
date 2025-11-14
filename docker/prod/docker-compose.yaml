@@ -83,6 +83,16 @@ services:
     networks:
       - service_net
       - keycloak_net
+  gpt-service:
+    container_name: 'ah-gpt-service'
+    image: cr.yandex/crpg4i3auefpfdaso0pg/agrohub-gpt-service:latest
+    ports:
+      - '4001:4001'
+    depends_on:
+      - auth-gate
+    networks:
+      - service_net
+      - llm_net
   auth-proxy:
     container_name: 'ah-auth-proxy'
     image: cr.yandex/crpg4i3auefpfdaso0pg/agrohub-auth-proxy:latest
@@ -143,6 +153,15 @@ services:
     image: cr.yandex/crpg4i3auefpfdaso0pg/agrohub-organization-service:latest
     ports:
       - '4008:4008'
+    depends_on:
+      - auth-gate
+    networks:
+      - service_net
+  calculator-service:
+    container_name: 'ah-calculator-service'
+    image: cr.yandex/crpg4i3auefpfdaso0pg/agrohub-calculator-service:latest
+    ports:
+      - '4009:4009'
     depends_on:
       - auth-gate
     networks:
