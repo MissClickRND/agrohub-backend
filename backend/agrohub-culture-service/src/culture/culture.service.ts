@@ -137,7 +137,7 @@ export class CultureService {
     }
 
     const result = await this.dataSource.query(
-      `DELETE FROM fields_logs fl
+      `DELETE FROM "fieldsLogs" fl
        USING zones z
        WHERE fl.id = $1
          AND fl.zone_id = z.id
