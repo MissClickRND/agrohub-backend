@@ -85,6 +85,17 @@ services:
     networks:
       - service_net
       - keycloak_net
+  gpt-service:
+    container_name: 'ah-gpt-service'
+    build:
+      dockerfile: Dockerfile
+      context: ../../backend/agrohub-gpt-service/
+    ports:
+      - '4001:4001'
+    depends_on:
+      - auth-gate
+    networks:
+      - service_net
   auth-proxy:
     container_name: 'ah-auth-proxy'
     build:

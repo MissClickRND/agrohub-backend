@@ -1,0 +1,2 @@
+﻿docker tag agrohub-gpt-service cr.yandex/crpg4i3auefpfdaso0pg/agrohub-gpt-service
+docker push cr.yandex/crpg4i3auefpfdaso0pg/agrohub-gpt-service

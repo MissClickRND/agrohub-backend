@@ -12,7 +12,6 @@ async function bootstrap() {
     .addTag('Grounds')
     .build();
 
-
   app.enableCors();
   app.setGlobalPrefix('/api');
 

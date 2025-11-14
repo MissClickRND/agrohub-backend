@@ -22,6 +22,6 @@ COPY --from=build /usr/src/app/dist ./dist
 COPY docker.env .env
 COPY docker-entrypoint.sh docker-entrypoint.sh
 
-EXPOSE 4002
+EXPOSE 4005
 
 CMD ["sh", "docker-entrypoint.sh"]

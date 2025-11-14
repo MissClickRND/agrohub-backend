@@ -5,7 +5,7 @@ import {
   Index,
 } from 'typeorm';
 
-@Entity({ name: 'Culture',  synchronize: false  })
+@Entity({ name: 'culture',  synchronize: false  })
 export class CultureEntity {
   @PrimaryGeneratedColumn()
   id: string;
