@@ -204,7 +204,7 @@ export class CultureService {
     });
 
     if (zones.length === 0) {
-      throw new NotFoundException('Field not found or not owned by your organization');
+      return [];
     }
 
     const result: GanttItem[] = [];
