@@ -120,6 +120,24 @@ services:
       - auth-gate
     networks:
       - service_net
+  dashboard-service:
+    container_name: 'ah-dashboard-service'
+    image: cr.yandex/crpg4i3auefpfdaso0pg/agrohub-dashboard-service:latest
+    ports:
+      - '4007:4007'
+    depends_on:
+      - auth-gate
+    networks:
+      - service_net
+  organization-service:
+    container_name: 'ah-organization-service'
+    image: cr.yandex/crpg4i3auefpfdaso0pg/agrohub-organization-service:latest
+    ports:
+      - '4008:4008'
+    depends_on:
+      - auth-gate
+    networks:
+      - service_net
 volumes:
   postgres-data:
 networks:

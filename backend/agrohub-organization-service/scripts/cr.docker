@@ -1,2 +1,2 @@
-﻿docker tag agrohub-auth-proxy cr.yandex/crpg4i3auefpfdaso0pg/agrohub-auth-proxy
-docker push cr.yandex/crpg4i3auefpfdaso0pg/agrohub-auth-proxy
+﻿docker tag agrohub-organization-service cr.yandex/crpg4i3auefpfdaso0pg/agrohub-organization-service
+docker push cr.yandex/crpg4i3auefpfdaso0pg/agrohub-organization-service

@@ -223,7 +223,7 @@ export class CultureService {
           text: zone.name,
           type: 'summary',
           start: now,
-          end: new Date(now.getTime() + 24 * 60 * 60 * 1000),
+          end: new Date(now.getTime() + 24 * 60 * 60),
         });
       } else {
         result.push({ id: zone.id, text: zone.name, type: 'summary' });
