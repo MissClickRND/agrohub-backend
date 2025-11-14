@@ -16,7 +16,7 @@ import { DashboardService } from './dashboard.service';
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
-  @Get('')
+  @Get('get')
   async getDashBoard(@Headers('x-user-id') userId: string) {
     const countFields = await this.dashboardService.countFields(userId);
     const countZones = await this.dashboardService.countZones(userId);
