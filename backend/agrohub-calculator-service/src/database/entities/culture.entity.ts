@@ -5,9 +5,9 @@ import {
   Index,
 } from 'typeorm';
 
-@Entity({ name: 'culture' })
+@Entity({ name: 'culture', synchronize: false })
 export class CultureEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ name: 'name', type: 'varchar', length: 100 })
