@@ -24,7 +24,7 @@ export class CalculatorService {
   async calculateEconomics(dto: CalcReqDto) {
 
     const crop = await this.cultureRepository.findOne({
-      where: { name: dto.cultureId },
+      where: { id: dto.cultureId },
     });
 
     if (!crop) {
