@@ -119,6 +119,17 @@ services:
       - auth-gate
     networks:
       - service_net
+  recommendation-service:
+    container_name: 'ah-crop-recommendation'
+    build:
+      dockerfile: Dockerfile
+      context: ../../ai/agrohub-crop-recommendation/
+    ports:
+      - '4004:4004'
+    depends_on:
+      - auth-gate
+    networks:
+      - service_net
   culture-service:
     container_name: 'ah-culture-service'
     build:

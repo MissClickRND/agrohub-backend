@@ -15,7 +15,7 @@ le = joblib.load('label_encoder.joblib')
 last_crop_categories = joblib.load('last_crop_categories.joblib')
 
 
-@app.post("/predict")
+@app.post("/api/recommendation/predict")
 def predict_crop(data: CropInput):
     input_df = pd.DataFrame([{
         "duration_months": data.duration_months,
@@ -46,4 +46,4 @@ def predict_crop(data: CropInput):
     top_crops = le.inverse_transform(top_idx).tolist()
     top_probs = pred_probs[top_idx].tolist()
 
-    return {"top_crops": top_crops, "top_probs": top_probs}
+    return {"top_crops": top_crops}

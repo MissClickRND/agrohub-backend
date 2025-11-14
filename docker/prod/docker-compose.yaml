@@ -102,6 +102,15 @@ services:
       - auth-gate
     networks:
       - service_net
+  recommendation-service:
+    container_name: 'ah-crop-recommendation'
+    image: cr.yandex/crpg4i3auefpfdaso0pg/agrohub-recommendation-service
+    ports:
+      - '4004:4004'
+    depends_on:
+      - auth-gate
+    networks:
+      - service_net
   culture-service:
     container_name: 'ah-culture-service'
     image: cr.yandex/crpg4i3auefpfdaso0pg/agrohub-culture-service:latest

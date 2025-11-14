@@ -1,0 +1,2 @@
+﻿docker tag agrohub-recommendation-service cr.yandex/crpg4i3auefpfdaso0pg/agrohub-recommendation-service
+docker push cr.yandex/crpg4i3auefpfdaso0pg/agrohub-recommendation-service
